@@ -1,0 +1,579 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+au_uv <- read.csv("new_au_uv.csv")
+```
+
+```{r}
+library(dplyr)
+library(geojson)
+library(ggplot2)
+library(ggrepel)
+library(leaflet)
+library(shiny)
+library(tidyverse)
+library(tidyr)
+library(stringr)
+```
+
+Melbourne 
+```{r}
+uv_melb <- read.csv("uv-melbourne-2021.csv")
+
+uv_melb<-tidyr::separate(uv_melb, Date.Time, c("date", "time"), sep = " ")
+
+timest_uv <- uv_melb %>% filter(stringr::str_starts(time,c('11','12','13')))
+
+```
+```{r}
+withmonth<- timest_uv %>%
+  mutate(Month = case_when(
+    startsWith(date, "2021-01") ~ "January",
+    startsWith(date, "2021-02") ~ "Feburary",
+    startsWith(date, "2021-03") ~ "March",
+    startsWith(date, "2021-04") ~ "April",
+    startsWith(date, "2021-05") ~ "May",
+    startsWith(date, "2021-06") ~ "June",
+    startsWith(date, "2021-07") ~ "July",
+    startsWith(date, "2021-08") ~ "August",
+    startsWith(date, "2021-09") ~ "September",
+    startsWith(date, "2021-10") ~ "October",
+    startsWith(date, "2021-11") ~ "November",
+    startsWith(date, "2021-12") ~ "December",
+    ))
+```
+
+```{r}
+Mel_monthly_uv<- withmonth %>% select(UV_Index:Month)
+mel_avg<- aggregate(Mel_monthly_uv$UV_Index, list(Mel_monthly_uv$Month), FUN=mean)
+mel_avg$x<- round(mel_avg$x,0)
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+mel_value <- header.true(as.data.frame(t(mel_avg)))
+mel_value$STATE <- "Victoria"
+mel_value$CITY <- "Melbourne"
+```
+
+Sydney
+```{r}
+uv_syd <- read.csv("uv-sydney-2021.csv")
+uv_syd<-tidyr::separate(uv_syd, Date.Time, c("date", "time"), sep = " ")
+timesyd_uv <- uv_syd %>% filter(stringr::str_starts(time,c('11','12','13')))
+```
+```{r}
+syd_withmonth<- timesyd_uv %>%
+  mutate(Month = case_when(
+    startsWith(date, "2021-01") ~ "January",
+    startsWith(date, "2021-02") ~ "Feburary",
+    startsWith(date, "2021-03") ~ "March",
+    startsWith(date, "2021-04") ~ "April",
+    startsWith(date, "2021-05") ~ "May",
+    startsWith(date, "2021-06") ~ "June",
+    startsWith(date, "2021-07") ~ "July",
+    startsWith(date, "2021-08") ~ "August",
+    startsWith(date, "2021-09") ~ "September",
+    startsWith(date, "2021-10") ~ "October",
+    startsWith(date, "2021-11") ~ "November",
+    startsWith(date, "2021-12") ~ "December",
+    ))
+```
+
+```{r}
+syd_monthly_uv<- syd_withmonth %>% select(UV_Index:Month)
+syd_avg<- aggregate(syd_monthly_uv$UV_Index, list(syd_monthly_uv$Month), FUN=mean)
+syd_avg$x<- round(syd_avg$x,0)
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+syd_value <- header.true(as.data.frame(t(syd_avg)))
+syd_value$STATE <- "New South Wales"
+syd_value$CITY <- "Sydney"
+```
+
+Adelaide
+```{r}
+uv_ade <- read.csv("uv-adelaide-2021.csv")
+uv_ade<-tidyr::separate(uv_ade, Date.Time, c("date", "time"), sep = " ")
+timeade_uv <- uv_ade %>% filter(stringr::str_starts(time,c('11','12','13')))
+```
+
+```{r}
+ade_withmonth<- timeade_uv %>%
+  mutate(Month = case_when(
+    startsWith(date, "2021-01") ~ "January",
+    startsWith(date, "2021-02") ~ "Feburary",
+    startsWith(date, "2021-03") ~ "March",
+    startsWith(date, "2021-04") ~ "April",
+    startsWith(date, "2021-05") ~ "May",
+    startsWith(date, "2021-06") ~ "June",
+    startsWith(date, "2021-07") ~ "July",
+    startsWith(date, "2021-08") ~ "August",
+    startsWith(date, "2021-09") ~ "September",
+    startsWith(date, "2021-10") ~ "October",
+    startsWith(date, "2021-11") ~ "November",
+    startsWith(date, "2021-12") ~ "December",
+    ))
+```
+
+```{r}
+ade_monthly_uv<- ade_withmonth %>% select(UV_Index:Month)
+ade_avg<- aggregate(ade_monthly_uv$UV_Index, list(ade_monthly_uv$Month), FUN=mean)
+ade_avg$x<- round(ade_avg$x,0)
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+ade_value <- header.true(as.data.frame(t(ade_avg)))
+ade_value$STATE <- "South Australia"
+ade_value$CITY <- "Adelaide"
+```
+
+Kingston
+```{r}
+uv_kin <- read.csv("uv-kingston-2021.csv")
+uv_kin<-tidyr::separate(uv_kin, Date.Time, c("date", "time"), sep = " ")
+timekin_uv <- uv_kin %>% filter(stringr::str_starts(time,c('11','12','13')))
+```
+
+```{r}
+kin_withmonth<- timekin_uv %>%
+  mutate(Month = case_when(
+    startsWith(date, "2021-01") ~ "January",
+    startsWith(date, "2021-02") ~ "Feburary",
+    startsWith(date, "2021-03") ~ "March",
+    startsWith(date, "2021-04") ~ "April",
+    startsWith(date, "2021-05") ~ "May",
+    startsWith(date, "2021-06") ~ "June",
+    startsWith(date, "2021-07") ~ "July",
+    startsWith(date, "2021-08") ~ "August",
+    startsWith(date, "2021-09") ~ "September",
+    startsWith(date, "2021-10") ~ "October",
+    startsWith(date, "2021-11") ~ "November",
+    startsWith(date, "2021-12") ~ "December",
+    ))
+```
+
+```{r}
+kin_monthly_uv<- kin_withmonth %>% select(UV_Index:Month)
+kin_avg<- aggregate(kin_monthly_uv$UV_Index, list(kin_monthly_uv$Month), FUN=mean)
+kin_avg$x<- round(kin_avg$x,0)
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+kin_value <- header.true(as.data.frame(t(kin_avg)))
+kin_value$STATE <- "Tasmania"
+kin_value$CITY <- "Kingston"
+```
+
+Perth
+```{r}
+uv_per <- read.csv("uv-perth-2021.csv")
+uv_per<-tidyr::separate(uv_per, Date.Time, c("date", "time"), sep = " ")
+timeper_uv <- uv_per %>% filter(stringr::str_starts(time,c('11','12','13')))
+```
+
+```{r}
+per_withmonth<- timeper_uv %>%
+  mutate(Month = case_when(
+    startsWith(date, "2021-01") ~ "January",
+    startsWith(date, "2021-02") ~ "Feburary",
+    startsWith(date, "2021-03") ~ "March",
+    startsWith(date, "2021-04") ~ "April",
+    startsWith(date, "2021-05") ~ "May",
+    startsWith(date, "2021-06") ~ "June",
+    startsWith(date, "2021-07") ~ "July",
+    startsWith(date, "2021-08") ~ "August",
+    startsWith(date, "2021-09") ~ "September",
+    startsWith(date, "2021-10") ~ "October",
+    startsWith(date, "2021-11") ~ "November",
+    startsWith(date, "2021-12") ~ "December",
+    ))
+```
+
+```{r}
+per_monthly_uv<- per_withmonth %>% select(UV_Index:Month)
+per_avg<- aggregate(per_monthly_uv$UV_Index, list(per_monthly_uv$Month), FUN=mean)
+per_avg$x<- round(per_avg$x,0)
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+per_value <- header.true(as.data.frame(t(per_avg)))
+per_value$STATE <- "Western Australia"
+per_value$CITY <- "Perth"
+```
+
+canberra
+```{r}
+uv_can <- read.csv("uv-canberra-2021.csv")
+uv_can<-tidyr::separate(uv_can, Date.Time, c("date", "time"), sep = " ")
+timecan_uv <- uv_can %>% filter(stringr::str_starts(time,c('11','12','13')))
+```
+
+```{r}
+can_withmonth<- timecan_uv %>%
+  mutate(Month = case_when(
+    startsWith(date, "2021-01") ~ "January",
+    startsWith(date, "2021-02") ~ "Feburary",
+    startsWith(date, "2021-03") ~ "March",
+    startsWith(date, "2021-04") ~ "April",
+    startsWith(date, "2021-05") ~ "May",
+    startsWith(date, "2021-06") ~ "June",
+    startsWith(date, "2021-07") ~ "July",
+    startsWith(date, "2021-08") ~ "August",
+    startsWith(date, "2021-09") ~ "September",
+    startsWith(date, "2021-10") ~ "October",
+    startsWith(date, "2021-11") ~ "November",
+    startsWith(date, "2021-12") ~ "December",
+    ))
+```
+
+```{r}
+can_monthly_uv<- can_withmonth %>% select(UV_Index:Month)
+can_avg<- aggregate(can_monthly_uv$UV_Index, list(can_monthly_uv$Month), FUN=mean)
+can_avg$x<- round(can_avg$x,0)
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+can_value <- header.true(as.data.frame(t(can_avg)))
+can_value$STATE <- "ACT"
+can_value$CITY <- "Canberra"
+```
+
+
+newcastle
+```{r}
+uv_new <- read.csv("uv-newcastle-2021.csv")
+uv_new<-tidyr::separate(uv_new, Date.Time, c("date", "time"), sep = " ")
+timenew_uv <- uv_new %>% filter(stringr::str_starts(time,c('11','12','13')))
+```
+
+```{r}
+new_withmonth<- timenew_uv %>%
+  mutate(Month = case_when(
+    startsWith(date, "2021-01") ~ "January",
+    startsWith(date, "2021-02") ~ "Feburary",
+    startsWith(date, "2021-03") ~ "March",
+    startsWith(date, "2021-04") ~ "April",
+    startsWith(date, "2021-05") ~ "May",
+    startsWith(date, "2021-06") ~ "June",
+    startsWith(date, "2021-07") ~ "July",
+    startsWith(date, "2021-08") ~ "August",
+    startsWith(date, "2021-09") ~ "September",
+    startsWith(date, "2021-10") ~ "October",
+    startsWith(date, "2021-11") ~ "November",
+    startsWith(date, "2021-12") ~ "December",
+    ))
+```
+
+```{r}
+new_monthly_uv<- new_withmonth %>% select(UV_Index:Month)
+new_avg<- aggregate(new_monthly_uv$UV_Index, list(new_monthly_uv$Month), FUN=mean)
+new_avg$x<- round(new_avg$x,0)
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+new_value <- header.true(as.data.frame(t(new_avg)))
+new_value$STATE <- "New South Wales"
+new_value$CITY <- "Newcastle"
+```
+
+Alice springs
+```{r}
+uv_ali <- read.csv("uv-alice-springs-2021.csv")
+uv_ali<-tidyr::separate(uv_ali, Date.Time, c("date", "time"), sep = " ")
+timeali_uv <- uv_ali %>% filter(stringr::str_starts(time,c('11','12','13')))
+```
+
+```{r}
+ali_withmonth<- timeali_uv %>%
+  mutate(Month = case_when(
+    startsWith(date, "2021-01") ~ "January",
+    startsWith(date, "2021-02") ~ "Feburary",
+    startsWith(date, "2021-03") ~ "March",
+    startsWith(date, "2021-04") ~ "April",
+    startsWith(date, "2021-05") ~ "May",
+    startsWith(date, "2021-06") ~ "June",
+    startsWith(date, "2021-07") ~ "July",
+    startsWith(date, "2021-08") ~ "August",
+    startsWith(date, "2021-09") ~ "September",
+    startsWith(date, "2021-10") ~ "October",
+    startsWith(date, "2021-11") ~ "November",
+    startsWith(date, "2021-12") ~ "December",
+    ))
+```
+
+```{r}
+ali_monthly_uv<- ali_withmonth %>% select(UV_Index:Month)
+ali_avg<- aggregate(ali_monthly_uv$UV_Index, list(ali_monthly_uv$Month), FUN=mean)
+ali_avg$x<- round(ali_avg$x,0)
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+ali_value <- header.true(as.data.frame(t(ali_avg)))
+ali_value$STATE <- "Northern Territory"
+ali_value$CITY <- "Alice Springs"
+```
+
+Emerald
+```{r}
+uv_eme <- read.csv("uv-emerald-2021.csv")
+uv_eme<-tidyr::separate(uv_eme, Date.Time, c("date", "time"), sep = " ")
+timeeme_uv <- uv_eme %>% filter(stringr::str_starts(time,c('11','12','13')))
+```
+
+```{r}
+eme_withmonth<- timeeme_uv %>%
+  mutate(Month = case_when(
+    startsWith(date, "2021-01") ~ "January",
+    startsWith(date, "2021-02") ~ "Feburary",
+    startsWith(date, "2021-03") ~ "March",
+    startsWith(date, "2021-04") ~ "April",
+    startsWith(date, "2021-05") ~ "May",
+    startsWith(date, "2021-06") ~ "June",
+    startsWith(date, "2021-07") ~ "July",
+    startsWith(date, "2021-08") ~ "August",
+    startsWith(date, "2021-09") ~ "September",
+    startsWith(date, "2021-10") ~ "October",
+    startsWith(date, "2021-11") ~ "November",
+    startsWith(date, "2021-12") ~ "December",
+    ))
+```
+
+```{r}
+eme_monthly_uv<- eme_withmonth %>% select(UV_Index:Month)
+eme_avg<- aggregate(eme_monthly_uv$UV_Index, list(eme_monthly_uv$Month), FUN=mean)
+eme_avg$x<- round(eme_avg$x,0)
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+eme_value <- header.true(as.data.frame(t(eme_avg)))
+eme_value$STATE <- "Queensland"
+eme_value$CITY <- "Emerald"
+```
+
+Brisbane
+```{r}
+uv_bri <- read.csv("uv-brisbane-2021.csv")
+uv_bri<-tidyr::separate(uv_bri, Date.Time, c("date", "time"), sep = " ")
+timebri_uv <- uv_bri %>% filter(stringr::str_starts(time,c('11','12','13')))
+```
+
+```{r}
+bri_withmonth<- timebri_uv %>%
+  mutate(Month = case_when(
+    startsWith(date, "2021-01") ~ "January",
+    startsWith(date, "2021-02") ~ "Feburary",
+    startsWith(date, "2021-03") ~ "March",
+    startsWith(date, "2021-04") ~ "April",
+    startsWith(date, "2021-05") ~ "May",
+    startsWith(date, "2021-06") ~ "June",
+    startsWith(date, "2021-07") ~ "July",
+    startsWith(date, "2021-08") ~ "August",
+    startsWith(date, "2021-09") ~ "September",
+    startsWith(date, "2021-10") ~ "October",
+    startsWith(date, "2021-11") ~ "November",
+    startsWith(date, "2021-12") ~ "December",
+    ))
+```
+
+```{r}
+bri_monthly_uv<- bri_withmonth %>% select(UV_Index:Month)
+bri_avg<- aggregate(bri_monthly_uv$UV_Index, list(bri_monthly_uv$Month), FUN=mean)
+bri_avg$x<- round(bri_avg$x,0)
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+bri_value <- header.true(as.data.frame(t(bri_avg)))
+bri_value$STATE <- "Queensland"
+bri_value$CITY <- "Brisbane"
+```
+
+Townsville
+```{r}
+uv_tow <- read.csv("uv-townsville-2021.csv")
+uv_tow<-tidyr::separate(uv_tow, Date.Time, c("date", "time"), sep = " ")
+timetow_uv <- uv_tow %>% filter(stringr::str_starts(time,c('11','12','13')))
+```
+
+```{r}
+tow_withmonth<- timetow_uv %>%
+  mutate(Month = case_when(
+    startsWith(date, "2021-01") ~ "January",
+    startsWith(date, "2021-02") ~ "Feburary",
+    startsWith(date, "2021-03") ~ "March",
+    startsWith(date, "2021-04") ~ "April",
+    startsWith(date, "2021-05") ~ "May",
+    startsWith(date, "2021-06") ~ "June",
+    startsWith(date, "2021-07") ~ "July",
+    startsWith(date, "2021-08") ~ "August",
+    startsWith(date, "2021-09") ~ "September",
+    startsWith(date, "2021-10") ~ "October",
+    startsWith(date, "2021-11") ~ "November",
+    startsWith(date, "2021-12") ~ "December",
+    ))
+```
+
+```{r}
+tow_monthly_uv<- tow_withmonth %>% select(UV_Index:Month)
+tow_avg<- aggregate(tow_monthly_uv$UV_Index, list(tow_monthly_uv$Month), FUN=mean)
+tow_avg$x<- round(tow_avg$x,0)
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+tow_value <- header.true(as.data.frame(t(tow_avg)))
+tow_value$STATE <- "Queensland"
+tow_value$CITY <- "Townsville"
+```
+
+darwin
+```{r}
+uv_dar <- read.csv("uv-darwin-2021.csv")
+uv_dar<-tidyr::separate(uv_dar, Date.Time, c("date", "time"), sep = " ")
+timedar_uv <- uv_dar %>% filter(stringr::str_starts(time,c('11','12','13')))
+```
+
+```{r}
+dar_withmonth<- timedar_uv %>%
+  mutate(Month = case_when(
+    startsWith(date, "2021-01") ~ "January",
+    startsWith(date, "2021-02") ~ "Feburary",
+    startsWith(date, "2021-03") ~ "March",
+    startsWith(date, "2021-04") ~ "April",
+    startsWith(date, "2021-05") ~ "May",
+    startsWith(date, "2021-06") ~ "June",
+    startsWith(date, "2021-07") ~ "July",
+    startsWith(date, "2021-08") ~ "August",
+    startsWith(date, "2021-09") ~ "September",
+    startsWith(date, "2021-10") ~ "October",
+    startsWith(date, "2021-11") ~ "November",
+    startsWith(date, "2021-12") ~ "December",
+    ))
+```
+
+```{r}
+dar_monthly_uv<- dar_withmonth %>% select(UV_Index:Month)
+dar_avg<- aggregate(dar_monthly_uv$UV_Index, list(dar_monthly_uv$Month), FUN=mean)
+dar_avg$x<- round(dar_avg$x,0)
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+dar_value <- header.true(as.data.frame(t(dar_avg)))
+dar_value$STATE <- "Northern Territory"
+dar_value$CITY <- "Darwin"
+```
+
+Gold coast
+```{r}
+uv_gol <- read.csv("uv-gold-coast-2021.csv")
+uv_gol<-tidyr::separate(uv_gol, Date.Time, c("date", "time"), sep = " ")
+timegol_uv <- uv_gol %>% filter(stringr::str_starts(time,c('11','12','13')))
+```
+
+```{r}
+gol_withmonth<- timegol_uv %>%
+  mutate(Month = case_when(
+    startsWith(date, "2021-01") ~ "January",
+    startsWith(date, "2021-02") ~ "Feburary",
+    startsWith(date, "2021-03") ~ "March",
+    startsWith(date, "2021-04") ~ "April",
+    startsWith(date, "2021-05") ~ "May",
+    startsWith(date, "2021-06") ~ "June",
+    startsWith(date, "2021-07") ~ "July",
+    startsWith(date, "2021-08") ~ "August",
+    startsWith(date, "2021-09") ~ "September",
+    startsWith(date, "2021-10") ~ "October",
+    startsWith(date, "2021-11") ~ "November",
+    startsWith(date, "2021-12") ~ "December",
+    ))
+```
+
+```{r}
+gol_monthly_uv<- gol_withmonth %>% select(UV_Index:Month)
+gol_avg<- aggregate(gol_monthly_uv$UV_Index, list(gol_monthly_uv$Month), FUN=mean)
+gol_avg$x<- round(gol_avg$x,0)
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  df[-1,]
+}
+gol_value <- header.true(as.data.frame(t(gol_avg)))
+gol_value$STATE <- "Queensland"
+gol_value$CITY <- "Gold Coast"
+```
+
+Join tables
+```{r}
+total_uv <- rbind(ade_value, ali_value, bri_value,can_value, dar_value, eme_value, gol_value, kin_value, mel_value, new_value, per_value, syd_value,tow_value)
+row.names(total_uv) <- 1:13 
+total_uv$ID <- rownames(total_uv)
+```
+
+```{r}
+colnames(total_uv)
+```
+
+```{r}
+final_uv <- total_uv[, c(15,14,13,5,4,8,1,9,7,6,2,12,11,10,3)]
+```
+
+```{r}
+write.csv(final_uv,"aus_uv.csv", row.names = FALSE)
+```
+
